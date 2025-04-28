@@ -1,6 +1,6 @@
 # Retail Order API
 
-A real-world, production-style backend project modeled after NN's Java API architecture.
+A real-world, production-style backend project.
 
 ## Structure
 
