@@ -15,9 +15,9 @@ public class ProductVariant {
     @Id
     @GeneratedValue
     private UUID id;
-    @NotBlank(message = "Product Url be provided")
+    @NotBlank(message = "Product Url must be provided")
     private String productUrl;
-    @NotBlank(message = "Product image be provided")
+    @NotBlank(message = "Product image must be provided")
     private String imageUrl;
     @PositiveOrZero(message = "Discounted Price must be >= 0")
     private BigDecimal price;

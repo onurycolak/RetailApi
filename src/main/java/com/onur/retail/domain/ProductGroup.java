@@ -15,9 +15,9 @@ public class ProductGroup {
     @Id
     @GeneratedValue
     private UUID id;
-    @NotBlank(message = "Product name be provided")
+    @NotBlank(message = "Product name must be provided")
     private String name;
-    @NotBlank(message = "Product url be provided")
+    @NotBlank(message = "Product url must be provided")
     private String description;
     @NotEmpty(message = "Created product must have at least 1 variant")
     @Valid
@@ -39,6 +39,10 @@ public class ProductGroup {
         this.updateDate = Instant.now();
         this.variants = variants;
     };
+
+    public UUID getId() {
+        return id;
+    }
 
     public String getName() {
         return name;
