@@ -10,10 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-public class Customer extends User{
-    @NotBlank(message = "Address must be provided")
+public class Customer extends User {
     String address;
-    //TODO: Add pattern validation
     String phoneNumber;
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     List<CartItem> cartItems = new ArrayList<>();
@@ -33,15 +31,16 @@ public class Customer extends User{
     ) {
         super(name, surname, email, userType, password);
 
-        validateRequiredFields(address);
-
         this.address = address;
         this.phoneNumber = phoneNumber;
+
+        validateString(address);
+        //TODO: Add pattern validation for phone number
     }
 
-    private void validateRequiredFields(String address) {
-        if (address == null || address.isBlank()) {
-            throw new IllegalArgumentException("Address must be non-null, non-blank");
+    private void validateString(String value) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("Provided value must be non-null, non-blank");
         }
     }
 
@@ -50,6 +49,8 @@ public class Customer extends User{
     }
 
     public void setPhoneNumber(String phoneNumber) {
+        validateString(phoneNumber);
+        //TODO: Add pattern validation for phone number
         this.phoneNumber = phoneNumber;
     }
 
@@ -58,6 +59,8 @@ public class Customer extends User{
     }
 
     public void setAddress(String address) {
+        validateString(address);
+
         this.address = address;
     }
 
@@ -74,6 +77,13 @@ public class Customer extends User{
     }
 
     public void addOrder(Order order) {
+        if (order == null) {
+            throw new IllegalArgumentException("Order must not be null.");
+        }
+        if (!this.equals(order.getCustomer())) {
+            throw new IllegalArgumentException("Order does not belong to this customer.");
+        }
+
         orders.add(order);
     }
 }

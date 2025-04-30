@@ -1,9 +1,6 @@
 package com.onur.retail.domain;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -15,21 +12,14 @@ public class ProductVariant {
     @Id
     @GeneratedValue
     private UUID id;
-    @NotBlank(message = "Product Url must be provided")
     private String productUrl;
-    @NotBlank(message = "Product image must be provided")
     private String imageUrl;
-    @PositiveOrZero(message = "Discounted Price must be >= 0")
     private BigDecimal price;
-    @NotNull(message = "Price must be provided")
-    @PositiveOrZero(message = "Price must be >= 0")
     private BigDecimal originalPrice;
     private String color;
     private String size;
     private Instant createDate;
     private Instant updateDate;
-    @PositiveOrZero(message = "Stock must be >= 0")
-    @NotNull(message = "Stock must be provided")
     private Integer stock;
     Boolean isDefault;
 
@@ -88,6 +78,10 @@ public class ProductVariant {
     }
 
     public void setStock(Integer stock) {
+        if (stock == null || stock < 0) {
+            throw new IllegalArgumentException("Stock must be non-null and >= 0");
+        }
+
         this.stock = stock;
     }
 
@@ -120,6 +114,10 @@ public class ProductVariant {
     }
 
     public void setOriginalPrice(BigDecimal originalPrice) {
+        if (originalPrice == null || originalPrice.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Original price must be non-null and >= 0");
+        }
+
         this.originalPrice = originalPrice;
     }
 
@@ -167,11 +165,11 @@ public class ProductVariant {
         this.imageUrl = imageUrl;
     }
 
-    public Boolean isDefault() {
-        return isDefault;
+    public Boolean getIsDefault() {
+        return this.isDefault;
     }
 
-    public void setDefault(Boolean aDefault) {
-        isDefault = aDefault;
+    public void setDefault(Boolean isDefault) {
+        this.isDefault = isDefault;
     }
 }
