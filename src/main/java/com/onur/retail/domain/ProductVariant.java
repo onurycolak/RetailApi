@@ -1,5 +1,6 @@
 package com.onur.retail.domain;
 
+import com.onur.retail.util.Validate;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -21,7 +22,7 @@ public class ProductVariant {
     private Instant createDate;
     private Instant updateDate;
     private Integer stock;
-    Boolean isDefault;
+    private Boolean isDefault;
 
     @ManyToOne
     @JoinColumn(name = "group_id")
@@ -39,38 +40,23 @@ public class ProductVariant {
             String size,
             Boolean isDefault
     ) {
-        validateRequiredFields(stock, originalPrice, productUrl, imageUrl);
-
-        this.originalPrice = originalPrice;
         this.size = size;
         this.color = color;
         this.stock = stock;
 
-        this.price = Objects.requireNonNullElse(price, originalPrice);
-
         this.createDate = Instant.now();
         this.updateDate = Instant.now();
         this.isDefault = isDefault;
-    }
 
-    private void validateRequiredFields(
-            Integer stock,
-            BigDecimal originalPrice,
-            String productUrl,
-            String imageUrl
-    ) {
-        if (stock == null || stock < 0) {
-            throw new IllegalArgumentException("Stock must be non-null and >= 0");
-        }
-        if (originalPrice == null || originalPrice.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Original price must be non-null and >= 0");
-        }
-        if (productUrl == null || productUrl.isBlank()) {
-            throw new IllegalArgumentException("Product Url must be non-null, non-blank");
-        }
-        if (imageUrl == null || imageUrl.isBlank()) {
-            throw new IllegalArgumentException("Product image must be non-null, non-blank");
-        }
+        Validate.validateString(productUrl, imageUrl);
+        Validate.validatePositiveInteger(stock);
+        Validate.validatePrice(originalPrice);
+
+        this.productUrl = productUrl;
+        this.imageUrl = imageUrl;
+
+        this.originalPrice = originalPrice;
+        this.price = Objects.requireNonNullElse(price, originalPrice);
     }
 
     public Integer getStock() {
@@ -78,9 +64,7 @@ public class ProductVariant {
     }
 
     public void setStock(Integer stock) {
-        if (stock == null || stock < 0) {
-            throw new IllegalArgumentException("Stock must be non-null and >= 0");
-        }
+        Validate.validatePositiveInteger(stock);
 
         this.stock = stock;
     }
@@ -89,7 +73,7 @@ public class ProductVariant {
         return productGroup;
     }
 
-    public void setProductGroup(ProductGroup productGroup) {
+    void setProductGroup(ProductGroup productGroup) {
         this.productGroup = productGroup;
     }
 
@@ -97,15 +81,17 @@ public class ProductVariant {
         return id;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
     public BigDecimal getPrice() {
         return price;
     }
 
     public void setPrice(BigDecimal price) {
+        Validate.validatePrice(price);
+
+        if (price.compareTo(this.originalPrice) > 0) {
+            throw new IllegalArgumentException("Price must be non-null, bigger than 0 and more than or equal to original price");
+        }
+
         this.price = price;
     }
 
@@ -114,9 +100,7 @@ public class ProductVariant {
     }
 
     public void setOriginalPrice(BigDecimal originalPrice) {
-        if (originalPrice == null || originalPrice.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Original price must be non-null and >= 0");
-        }
+        Validate.validatePrice(originalPrice);
 
         this.originalPrice = originalPrice;
     }
@@ -126,6 +110,8 @@ public class ProductVariant {
     }
 
     public void setColor(String color) {
+        Validate.validateString(color);
+
         this.color = color;
     }
 
@@ -134,6 +120,8 @@ public class ProductVariant {
     }
 
     public void setSize(String size) {
+        Validate.validateString(size);
+
         this.size = size;
     }
 
@@ -145,8 +133,8 @@ public class ProductVariant {
         return updateDate;
     }
 
-    public void setUpdateDate(Instant updateDate) {
-        this.updateDate = updateDate;
+    public void setUpdateDate() {
+        this.updateDate = Instant.now();
     }
 
     public String getProductUrl() {
@@ -154,6 +142,8 @@ public class ProductVariant {
     }
 
     public void setProductUrl(String productUrl) {
+        Validate.validateString(productUrl);
+
         this.productUrl = productUrl;
     }
 
@@ -162,6 +152,8 @@ public class ProductVariant {
     }
 
     public void setImageUrl(String imageUrl) {
+        Validate.validateString(imageUrl);
+
         this.imageUrl = imageUrl;
     }
 
@@ -169,7 +161,8 @@ public class ProductVariant {
         return this.isDefault;
     }
 
-    public void setDefault(Boolean isDefault) {
+    void setDefault(Boolean isDefault) {
         this.isDefault = isDefault;
+
     }
 }

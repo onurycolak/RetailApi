@@ -1,10 +1,10 @@
 package com.onur.retail.domain;
 
+import com.onur.retail.util.Validate;
 import jakarta.persistence.*;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,19 +30,13 @@ public class ProductGroup {
         this.createDate = Instant.now();
         this.updateDate = Instant.now();
 
-        validateString(name, description);
+        Validate.validateString(name, description);
 
         this.name = name;
         this.description = description;
 
         setVariants(variants);
     };
-
-    private void validateString(String... values) {
-        if (!Arrays.stream(values).allMatch(value -> value != null && !value.isBlank())) {
-            throw new IllegalArgumentException("Provided value(s) must be non-null, non-blank");
-        }
-    }
 
     public UUID getId() {
         return id;
@@ -73,13 +67,13 @@ public class ProductGroup {
     }
 
     public void setName(String name) {
-        validateString(name);
+        Validate.validateString(name);
 
         this.name = name;
     }
 
     public void setDescription(String description) {
-        validateString(description);
+        Validate.validateString(description);
 
         this.description = description;
     }
@@ -92,7 +86,7 @@ public class ProductGroup {
         this.variants.addAll(variants);
 
         variants.forEach((groupVariant) -> {
-            groupVariant.setUpdateDate(Instant.now());
+            groupVariant.setUpdateDate();
             groupVariant.setProductGroup(this);
         });
 

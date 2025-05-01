@@ -1,8 +1,7 @@
 package com.onur.retail.domain;
 
+import com.onur.retail.util.Validate;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -12,16 +11,11 @@ public abstract class User {
     @Id
     @GeneratedValue
     private UUID id;
-    @NotBlank(message = "Name must be provided")
     private String name;
-    @NotBlank(message = "Surname must be provided")
     private String surname;
-    @Email
-    @NotBlank(message = "Email must be provided")
     private String email;
     private Instant createDate;
     private Instant updateDate;
-    @NotBlank(message = "Password must be provided")
     private String password;
     @Enumerated(EnumType.STRING)
     private UserType userType;
@@ -29,7 +23,7 @@ public abstract class User {
     public User() {}
 
     public User(String name, String surname, String email, UserType userType, String password) {
-        validateRequiredFields(name, surname, email, password);
+        Validate.validateString(name, surname, email, password);
         this.name = name;
         this.surname = surname;
         this.email = email;
@@ -43,36 +37,8 @@ public abstract class User {
         return userType;
     }
 
-    public void setUserType(UserType userType) {
-        this.userType = userType;
-    }
-
-    private void validateRequiredFields(
-            String name,
-            String surname,
-            String email,
-            String password
-    ) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Name must be non-null, non-blank");
-        }
-        if (surname == null || surname.isBlank()) {
-            throw new IllegalArgumentException("Surname must be non-null, non-blank");
-        }
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("Email must be non-null, non-blank");
-        }
-        if (password == null || password.isBlank()) {
-            throw new IllegalArgumentException("Password must be non-null, non-blank");
-        }
-    }
-
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getPassword() {
@@ -80,6 +46,7 @@ public abstract class User {
     }
 
     public void setPassword(String password) {
+        Validate.validateString(password); //TODO: ADD VALIDATE PASSWORD UTIL
         this.password = password;
     }
 
@@ -87,16 +54,8 @@ public abstract class User {
         return surname;
     }
 
-    public void setSurname(String surname) {
-        this.surname = surname;
-    }
-
     public String getEmail() {
         return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public Instant getCreateDate() {
@@ -107,8 +66,8 @@ public abstract class User {
         return updateDate;
     }
 
-    public void setUpdateDate(Instant updateDate) {
-        this.updateDate = updateDate;
+    public void setUpdateDate() {
+        this.updateDate = Instant.now();
     }
 
     public UUID getId() {

@@ -5,10 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 
 public class CustomerRequest extends UserBaseRequest{
     @NotBlank(message = "Address must be provided")
-    String address;
-    String phoneNumber;
-
-    public CustomerRequest() {}
+    private final String address;
+    private final String phoneNumber;
 
     public CustomerRequest(
             String name,

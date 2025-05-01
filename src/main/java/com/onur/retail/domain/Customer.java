@@ -1,24 +1,21 @@
 package com.onur.retail.domain;
 
+import com.onur.retail.util.Validate;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 public class Customer extends User {
-    String address;
-    String phoneNumber;
+    private String address;
+    private String phoneNumber;
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<CartItem> cartItems = new ArrayList<>();
+    private final List<CartItem> cartItems = new ArrayList<>();
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
-    List<Order> orders = new ArrayList<>(); //TODO: create order entity
-
-    public Customer() {}
+    private final List<Order> orders = new ArrayList<>(); //TODO: create order entity
 
     public Customer(
             String name,
@@ -31,17 +28,12 @@ public class Customer extends User {
     ) {
         super(name, surname, email, userType, password);
 
-        this.address = address;
         this.phoneNumber = phoneNumber;
 
-        validateString(address);
-        //TODO: Add pattern validation for phone number
-    }
+        Validate.validateString(address);
 
-    private void validateString(String value) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("Provided value must be non-null, non-blank");
-        }
+        this.address = address;
+        //TODO: Add pattern validation for phone number
     }
 
     public String getPhoneNumber() {
@@ -49,7 +41,7 @@ public class Customer extends User {
     }
 
     public void setPhoneNumber(String phoneNumber) {
-        validateString(phoneNumber);
+        Validate.validateString(phoneNumber);
         //TODO: Add pattern validation for phone number
         this.phoneNumber = phoneNumber;
     }
@@ -59,7 +51,7 @@ public class Customer extends User {
     }
 
     public void setAddress(String address) {
-        validateString(address);
+        Validate.validateString(address);
 
         this.address = address;
     }

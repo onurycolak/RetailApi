@@ -6,13 +6,13 @@ import jakarta.validation.constraints.Positive;
 import java.util.UUID;
 
 public class CartItemRequest {
-    @NotNull
-    UUID customerId;
-    @NotNull
-    UUID variationId;
-    @Positive
-    @NotNull
-    Integer quantity;
+    @NotNull(message = "customerId be provided")
+    private UUID customerId;
+    @NotNull(message = "variationId must be provided")
+    private UUID variationId;
+    @Positive(message = "quantity must be a positive number")
+    @NotNull(message = "quantity must be provided")
+    private Integer quantity;
 
     public CartItemRequest() {}
 
