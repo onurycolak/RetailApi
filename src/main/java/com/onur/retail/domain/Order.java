@@ -1,9 +1,8 @@
 package com.onur.retail.domain;
 
-import com.onur.retail.util.Validate;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotEmpty;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +13,6 @@ public class Order {
     @Id
     @GeneratedValue
     private UUID id;
-    private String coupon;
     @Enumerated(EnumType.STRING)
     private PaymentType paymentType;
     private String transactionId;
@@ -24,44 +22,42 @@ public class Order {
     private Customer customer;
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus = OrderStatus.PENDING;
-
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "order_id")
-    private List<CartItem> cartItems = new ArrayList<>();
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private final List<OrderItem> orderItems = new ArrayList<>();
+    private BigDecimal totalPaid;
 
 
     public Order() {}
 
     public Order(
             Customer customer,
-            List<CartItem> cartItems,
-            String coupon,
+            Cart cart,
             PaymentType paymentType,
             String transactionId
     ) {
-        this.coupon = coupon;
-
-        if (paymentType == null) {
-            throw new IllegalArgumentException("Payment method can not be null");
-        }
-
+        validateFields(customer, cart, paymentType);
         this.paymentType = paymentType;
         this.transactionId = transactionId;
-
-        validateFields(customer, cartItems);
         this.customer = customer;
-        this.cartItems = cartItems;
         this.orderDate = Instant.now();
+        this.customer.addOrder(this);
+        cart.getCartItems().forEach((cartItem -> orderItems.add(new OrderItem(this, cartItem))));
+
+        BigDecimal subtotal = orderItems.stream()
+                .map(OrderItem::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        this.totalPaid = subtotal.add(cart.getShippingAmount());
     }
 
-    private void validateFields(Customer customer, List<CartItem> cartItems) {
-        if (customer == null || cartItems == null) {
-            throw new IllegalArgumentException("customer or cartItems cannot be null");
+    private void validateFields(Customer customer, Cart cart, PaymentType paymentType) {
+        if (customer == null || cart == null || paymentType == null) {
+            throw new IllegalArgumentException("Provided value(s) must not be null");
         }
+    }
 
-        if (cartItems.isEmpty()) {
-            throw new IllegalArgumentException("cartItems cannot be empty");
-        }
+    public BigDecimal getTotalPaid() {
+        return totalPaid;
     }
 
     public OrderStatus getOrderStatus() {
@@ -80,10 +76,6 @@ public class Order {
         return id;
     }
 
-    public String getCoupon() {
-        return coupon;
-    }
-
     public PaymentType getPaymentType() {
         return paymentType;
     }
@@ -96,11 +88,11 @@ public class Order {
         return customer;
     }
 
-    public List<CartItem> getCartItems() {
-        return cartItems;
-    }
-
     public Instant getOrderDate() {
         return orderDate;
+    }
+
+    public List<OrderItem> getOrderItems() {
+        return orderItems;
     }
 }

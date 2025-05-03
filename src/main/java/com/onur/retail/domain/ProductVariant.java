@@ -13,7 +13,6 @@ public class ProductVariant {
     @Id
     @GeneratedValue
     private UUID id;
-    private String productUrl;
     private String imageUrl;
     private BigDecimal price;
     private BigDecimal originalPrice;
@@ -31,7 +30,6 @@ public class ProductVariant {
     public ProductVariant() {}
 
     public ProductVariant(
-            String productUrl,
             String imageUrl,
             BigDecimal price,
             BigDecimal originalPrice,
@@ -48,11 +46,10 @@ public class ProductVariant {
         this.updateDate = Instant.now();
         this.isDefault = isDefault;
 
-        Validate.validateString(productUrl, imageUrl);
+        Validate.validateString(imageUrl);
         Validate.validatePositiveInteger(stock);
-        Validate.validatePrice(originalPrice);
+        Validate.validateBigDecimal(originalPrice);
 
-        this.productUrl = productUrl;
         this.imageUrl = imageUrl;
 
         this.originalPrice = originalPrice;
@@ -86,7 +83,7 @@ public class ProductVariant {
     }
 
     public void setPrice(BigDecimal price) {
-        Validate.validatePrice(price);
+        Validate.validateBigDecimal(price);
 
         if (price.compareTo(this.originalPrice) > 0) {
             throw new IllegalArgumentException("Price must be non-null, bigger than 0 and more than or equal to original price");
@@ -100,7 +97,7 @@ public class ProductVariant {
     }
 
     public void setOriginalPrice(BigDecimal originalPrice) {
-        Validate.validatePrice(originalPrice);
+        Validate.validateBigDecimal(originalPrice);
 
         this.originalPrice = originalPrice;
     }
@@ -135,16 +132,6 @@ public class ProductVariant {
 
     public void setUpdateDate() {
         this.updateDate = Instant.now();
-    }
-
-    public String getProductUrl() {
-        return productUrl;
-    }
-
-    public void setProductUrl(String productUrl) {
-        Validate.validateString(productUrl);
-
-        this.productUrl = productUrl;
     }
 
     public String getImageUrl() {

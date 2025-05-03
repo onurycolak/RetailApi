@@ -4,6 +4,7 @@ import com.onur.retail.util.Validate;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,8 +13,8 @@ import java.util.List;
 public class Customer extends User {
     private String address;
     private String phoneNumber;
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final List<CartItem> cartItems = new ArrayList<>();
+    @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Cart cart;
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
     private final List<Order> orders = new ArrayList<>(); //TODO: create order entity
 
@@ -60,12 +61,12 @@ public class Customer extends User {
         return orders;
     }
 
-    public List<CartItem> getCartProducts() {
-        return cartItems;
+    public Cart getCart() {
+        return cart;
     }
 
-    public void addItemToCart(CartItem item) {
-        cartItems.add(item);
+    public void setCart(Cart cart) {
+        this.cart = cart;
     }
 
     public void addOrder(Order order) {

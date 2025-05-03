@@ -2,6 +2,7 @@ package com.onur.retail.domain;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -19,6 +20,9 @@ public class CartItem {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
     private Integer quantity = 1;
+    @ManyToOne
+    @JoinColumn(name = "cart_id")
+    private Cart cart;
 
     public CartItem(){}
 
@@ -70,6 +74,16 @@ public class CartItem {
         return updateDate;
     }
 
+    @Transient
+    public BigDecimal getOriginalTotal() {
+        return this.productVariant.getOriginalPrice().multiply(new BigDecimal(this.quantity));
+    }
+
+    @Transient
+    public BigDecimal getTotal() {
+        return this.productVariant.getPrice().multiply(new BigDecimal(this.quantity));
+    }
+
     public void setQuantity(Integer quantity) {
         if (quantity == null || quantity <= 0) {
             throw new IllegalArgumentException("Quantity must not be null positive integer");
@@ -77,5 +91,17 @@ public class CartItem {
 
         this.quantity = quantity;
         this.updateDate = Instant.now();
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public Cart getCart() {
+        return cart;
+    }
+
+    void setCart(Cart cart) {
+        this.cart = cart;
     }
 }

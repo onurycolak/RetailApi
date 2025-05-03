@@ -16,7 +16,7 @@ public class Validate {
         }
     }
 
-    public static void validatePrice(BigDecimal... values) {
+    public static void validateBigDecimal(BigDecimal... values) {
         if (!Arrays.stream(values).allMatch(value -> value != null && value.compareTo(BigDecimal.ZERO) > 0)) {
             throw new IllegalArgumentException("Provided price(s) must be non-null, and bigger than 0");
         }

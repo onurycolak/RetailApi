@@ -22,7 +22,12 @@ public abstract class User {
 
     public User() {}
 
-    public User(String name, String surname, String email, UserType userType, String password) {
+    public User(
+            String name,
+            String surname,
+            String email,
+            UserType userType,
+            String password) {
         Validate.validateString(name, surname, email, password);
         this.name = name;
         this.surname = surname;

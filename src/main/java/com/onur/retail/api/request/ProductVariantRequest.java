@@ -8,8 +8,6 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 public class ProductVariantRequest {
-    @NotBlank(message = "Product Url be provided")
-    private String productUrl;
     @NotBlank(message = "Product image be provided")
     private String imageUrl;
     @PositiveOrZero(message = "Discounted Price must be >= 0")
@@ -24,10 +22,9 @@ public class ProductVariantRequest {
     private Integer stock;
     Boolean isDefault;
 
-    public  ProductVariantRequest() {};
+    public ProductVariantRequest() {};
 
-    public  ProductVariantRequest(
-            String productUrl,
+    public ProductVariantRequest(
             String imageUrl,
             BigDecimal price,
             BigDecimal originalPrice,
@@ -42,13 +39,8 @@ public class ProductVariantRequest {
         this.stock = stock;
         this.price = Objects.requireNonNullElse(price, originalPrice);
         this.isDefault = isDefault;
-        this.productUrl = productUrl;
         this.imageUrl = imageUrl;
     };
-
-    public String getProductUrl() {
-        return productUrl;
-    }
 
     public String getImageUrl() {
         return imageUrl;
