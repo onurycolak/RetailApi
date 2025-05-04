@@ -148,7 +148,7 @@ public class ProductVariant {
         return this.isDefault;
     }
 
-    void setDefault(Boolean isDefault) {
+    public void setDefault(Boolean isDefault) {
         this.isDefault = isDefault;
 
     }

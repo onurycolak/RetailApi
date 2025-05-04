@@ -1,5 +1,6 @@
 package com.onur.retail.api.request;
 
+import com.onur.retail.domain.ProductVariant;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -68,5 +69,19 @@ public class ProductVariantRequest {
 
     public Boolean getIsDefault() {
         return this.isDefault;
+    }
+
+    public ProductVariant toEntity() {
+        ProductVariant variant = new ProductVariant();
+
+        variant.setImageUrl(this.imageUrl);
+        variant.setOriginalPrice(this.originalPrice);
+        variant.setPrice(this.price != null ? this.price : this.originalPrice);
+        variant.setColor(this.color);
+        variant.setSize(this.size);
+        variant.setStock(this.stock);
+        variant.setDefault(Boolean.TRUE.equals(this.isDefault));
+
+        return variant;
     }
 }

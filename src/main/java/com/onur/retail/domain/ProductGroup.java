@@ -85,17 +85,19 @@ public class ProductGroup {
 
         this.variants.addAll(variants);
 
-        variants.forEach((groupVariant) -> {
-            groupVariant.setUpdateDate();
-            groupVariant.setProductGroup(this);
-        });
+        // Ensure only one is default
+        boolean hasDefault = false;
 
-        this.updateDate = Instant.now();
-    }
+        for (ProductVariant variant : variants) {
+            variant.setUpdateDate();
+            variant.setProductGroup(this);
 
-    public void addVariant(ProductVariant variant) {
-        variants.add(variant);
-        variant.setProductGroup(this);
+            if (!hasDefault && Boolean.TRUE.equals(variant.getIsDefault())) {
+                hasDefault = true;
+            } else if (hasDefault && Boolean.TRUE.equals(variant.getIsDefault())) {
+                variant.setDefault(false);
+            }
+        }
 
         this.updateDate = Instant.now();
     }

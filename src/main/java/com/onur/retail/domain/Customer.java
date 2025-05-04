@@ -18,6 +18,8 @@ public class Customer extends User {
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
     private final List<Order> orders = new ArrayList<>(); //TODO: create order entity
 
+    public Customer () { super(); }
+
     public Customer(
             String name,
             String surname,

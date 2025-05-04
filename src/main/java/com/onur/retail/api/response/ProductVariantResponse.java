@@ -63,7 +63,7 @@ public class ProductVariantResponse {
         return size;
     }
 
-    public Boolean getDefault() {
+    public Boolean getIsDefault() {
         return isDefault;
     }
 

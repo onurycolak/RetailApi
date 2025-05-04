@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
+@Table(name = "users")
 public abstract class User {
     @Id
     @GeneratedValue
