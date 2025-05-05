@@ -1,6 +1,9 @@
 package com.onur.retail.repository;
 
 import com.onur.retail.domain.Customer;
+import com.onur.retail.domain.ProductVariant;
+import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -9,14 +12,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 @ApplicationScoped
-public class CustomerRepository {
+public class CustomerRepository implements PanacheRepositoryBase<Customer, UUID> {
 
     @Inject
     EntityManager entityManager;
-
-    public Optional<Customer> findById(UUID id) {
-        return Optional.ofNullable(entityManager.find(Customer.class, id));
-    }
 
     public boolean existsByEmail(String email) {
         Long count = entityManager.createQuery(

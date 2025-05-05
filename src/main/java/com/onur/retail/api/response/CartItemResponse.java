@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public class CartItemResponse {
     private UUID id;
+    private UUID productId;
     private String productName;
     private String size;
     private String color;
@@ -24,6 +25,7 @@ public class CartItemResponse {
         ProductVariant product = cartItem.getProductVariant();
 
         response.id = cartItem.getId();
+        response.productId = product.getId();
         response.productName = product.getProductGroup().getName();
         response.productImageUrl = product.getImageUrl();
         response.size = product.getSize();
@@ -31,10 +33,14 @@ public class CartItemResponse {
         response.quantity = cartItem.getQuantity();
         response.total = cartItem.getTotal();
         response.originalTotal = cartItem.getOriginalTotal();
-        response.originalTotal = product.getOriginalPrice();
+        response.originalUnitPrice = product.getOriginalPrice();
         response.unitPrice = product.getPrice();
 
         return response;
+    }
+
+    public UUID getProductId() {
+        return productId;
     }
 
     public UUID getId() {

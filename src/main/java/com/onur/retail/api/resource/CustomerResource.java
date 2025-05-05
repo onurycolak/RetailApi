@@ -13,7 +13,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-@Path("/create-customer")
+@Path("/user")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Transactional
@@ -23,6 +23,7 @@ public class CustomerResource {
     CustomerService customerService;
 
     @POST
+    @Path("/create")
     public Response createProductGroup(@Valid CustomerRequest request) {
         CustomerProfileResponse created = customerService.createCustomer(request);
         return Response.status(Response.Status.CREATED).entity(created).build();
