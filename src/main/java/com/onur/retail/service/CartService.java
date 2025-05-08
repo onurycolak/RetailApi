@@ -4,6 +4,7 @@ import com.onur.retail.api.request.CartItemRequest;
 import com.onur.retail.api.response.CartItemResponse;
 import com.onur.retail.api.response.CartResponse;
 import com.onur.retail.api.response.ErrorResponse;
+import com.onur.retail.domain.Cart;
 import com.onur.retail.domain.CartItem;
 import com.onur.retail.domain.Customer;
 import com.onur.retail.domain.ProductVariant;
@@ -13,10 +14,12 @@ import com.onur.retail.repository.ProductVariantRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
 import java.util.Objects;
+import java.util.UUID;
 
 @ApplicationScoped
 public class CartService {
@@ -76,5 +79,29 @@ public class CartService {
         }
 
         return CartResponse.from(customer.getCart());
+    }
+
+    public Cart getCartByUserId(UUID customerId) {
+        Customer customer = customerRepository.findById(customerId);
+
+        if (customer == null) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.NOT_FOUND)
+                            .entity(new ErrorResponse("User not found"))
+                            .type("application/json")
+                            .build()
+            );
+        }
+
+        return customer.getCart();
+    }
+
+    @Transactional
+    public void clearCartByCustomerId(UUID customerId) {
+        Cart cart = getCartByUserId(customerId);
+
+        cart.clearCart();
+
+        entityManager.flush();
     }
 }

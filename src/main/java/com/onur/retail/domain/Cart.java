@@ -109,7 +109,7 @@ public class Cart {
         if (item == null) {
             throw new IllegalArgumentException("Item added to cart must be non-null");
         }
-        // do i need to make sure cart items is a unqiue list of elements, no duplicates?
+
         cartItems.add(item);
         item.setCart(this);
     }
@@ -120,6 +120,10 @@ public class Cart {
         }
 
         cartItems.removeIf(cartItem -> cartItem.getId().equals(item.getId()));
+    }
+
+    public void clearCart() {
+        cartItems.clear();
     }
 
     public void setCartItems(List<CartItem> cartItems) {
