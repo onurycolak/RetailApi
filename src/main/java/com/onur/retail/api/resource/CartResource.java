@@ -44,10 +44,22 @@ public class CartResource {
     @Path("/{customerId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response emptyCart(@PathParam("customerId") UUID customerId) {
-        Cart cart = cartService.getCartByUserId(customerId);
-
         cartService.clearCartByCustomerId(customerId);
 
         return Response.noContent().build();
     }
+
+    @DELETE
+    @Path("/{customerId}/{itemId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response removeItemFromCart(
+            @PathParam("customerId") UUID customerId,
+            @PathParam("itemId") UUID itemId,
+            @QueryParam("q") Integer quantity
+    ) {
+        Cart updatedCart = cartService.removeItemFromCart(customerId, itemId, quantity);
+
+        return Response.ok(CartResponse.from(updatedCart)).build();
+    }
+
 }

@@ -30,6 +30,57 @@ public class CartResourceTest {
         entityManager.createQuery("DELETE FROM ProductGroup").executeUpdate();
     }
 
+    public record CustomerAndVariant(String customerId, String variantId) {}
+
+
+    private CustomerAndVariant createCustomerAndVariant() {
+        String customerId = given()
+                .contentType(ContentType.JSON)
+                .body("""
+            {
+              "name": "Carty",
+              "surname": "McCartface",
+              "email": "carty@example.com",
+              "userType": "CUSTOMER",
+              "password": "cartpass123",
+              "phoneNumber": "+12345678901",
+              "address": "Cart Street"
+            }
+        """)
+                .post("/user/create")
+                .then()
+                .statusCode(201)
+                .extract()
+                .path("user.id");
+
+        String variantId = given()
+                .contentType(ContentType.JSON)
+                .body("""
+            {
+              "name": "Cart Product",
+              "description": "Test product for cart",
+              "variants": [
+                {
+                  "imageUrl": "https://cdn.example.com/test.png",
+                  "price": 89.99,
+                  "originalPrice": 109.99,
+                  "stock": 5,
+                  "color": "Black",
+                  "size": "L",
+                  "isDefault": true
+                }
+              ]
+            }
+        """)
+                .post("/product-group/create")
+                .then()
+                .statusCode(201)
+                .extract()
+                .path("variants[0].id");
+
+        return new CustomerAndVariant(customerId, variantId);
+    }
+
     @Test
     void shouldAddItemToCart() {
         // Step 1: Create customer
@@ -372,4 +423,217 @@ public class CartResourceTest {
                 .body("items.size()", is(0))
                 .body("totalAmount.toString()", equalTo("0"));
     }
+
+    @Test
+    void shouldDecreaseCartItemQuantityWithoutRemovingIt(){
+        CustomerAndVariant data = createCustomerAndVariant();
+        String customerId = data.customerId();
+        String variantId = data.variantId();
+
+        given()
+                .contentType(ContentType.JSON)
+                .body("""
+                {
+                  "customerId": "%s",
+                  "variationId": "%s",
+                  "quantity": 2
+                }
+            """.formatted(customerId, variantId))
+                .post("/cart/add")
+                .then()
+                .statusCode(201);
+
+        given().when().delete("cart/" + customerId + "/" + variantId + "?q=1")
+                .then().statusCode(200)
+                .body("items[0].productId", equalTo(variantId))
+                .body("items[0].quantity", is(1));
+
+        given().when().get("/cart/" + customerId)
+                .then().statusCode(200)
+                .body("items.size()", is(1))
+                .body("items[0].productId", equalTo(variantId))
+                .body("items[0].quantity", is(1));
+    }
+
+    @Test
+    void shouldRemoveCartItemWhenQuantityBecomesZero(){
+        CustomerAndVariant data = createCustomerAndVariant();
+        String customerId = data.customerId();
+        String variantId = data.variantId();
+
+        given()
+                .contentType(ContentType.JSON)
+                .body("""
+                {
+                  "customerId": "%s",
+                  "variationId": "%s",
+                  "quantity": 2
+                }
+            """.formatted(customerId, variantId))
+                .post("/cart/add")
+                .then()
+                .statusCode(201);
+
+        given().when().delete("cart/" + customerId + "/" + variantId + "?q=2")
+                .then().statusCode(200)
+                .body("items.size()", is(0));
+
+        given().when().get("/cart/" + customerId)
+                .then().statusCode(200)
+                .body("items.size()", is(0));
+    }
+
+    @Test
+    void shouldFailIfExceedingQuantity() {
+        CustomerAndVariant data = createCustomerAndVariant();
+        String customerId = data.customerId();
+        String variantId = data.variantId();
+
+        given()
+                .contentType(ContentType.JSON)
+                .body("""
+                {
+                  "customerId": "%s",
+                  "variationId": "%s",
+                  "quantity": 2
+                }
+            """.formatted(customerId, variantId))
+                .post("/cart/add")
+                .then()
+                .statusCode(201);
+
+        given().when().delete("cart/" + customerId + "/" + variantId + "?q=3")
+                .then().statusCode(400);
+    }
+
+    @Test
+    void shouldFailIfQuantityIsInvalid() {
+        CustomerAndVariant data = createCustomerAndVariant();
+        String customerId = data.customerId();
+        String variantId = data.variantId();
+
+        given()
+                .contentType(ContentType.JSON)
+                .body("""
+                            {
+                              "customerId": "%s",
+                              "variationId": "%s",
+                              "quantity": 2
+                            }
+                        """.formatted(customerId, variantId))
+                .post("/cart/add")
+                .then()
+                .statusCode(201);
+
+        given().when().delete("cart/" + customerId + "/" + variantId + "?q=0")
+                .then().statusCode(400);
+
+        given().when().delete("cart/" + customerId + "/" + variantId + "?q=-9")
+                .then().statusCode(400);
+    }
+
+    @Test void shouldRemoveItemWithNoQuantity() {
+        CustomerAndVariant data = createCustomerAndVariant();
+        String customerId = data.customerId();
+        String variantId = data.variantId();
+
+        given()
+                .contentType(ContentType.JSON)
+                .body("""
+                {
+                  "customerId": "%s",
+                  "variationId": "%s",
+                  "quantity": 2
+                }
+            """.formatted(customerId, variantId))
+                .post("/cart/add")
+                .then()
+                .statusCode(201);
+
+        given().when().delete("cart/" + customerId + "/" + variantId)
+                .then().statusCode(200)
+                .body("items.size()", is(1))
+                .body("items[0].quantity", is(1));
+
+        given().when().get("/cart/" + customerId)
+                .then().statusCode(200)
+                .body("items.size()", is(1))
+                .body("items[0].quantity", is(1));
+    }
+
+    @Test
+    void shouldFailIfSubsequentDefaultExceedsQuantity() {
+        CustomerAndVariant data = createCustomerAndVariant();
+        String customerId = data.customerId();
+        String variantId = data.variantId();
+
+        given()
+                .contentType(ContentType.JSON)
+                .body("""
+                {
+                  "customerId": "%s",
+                  "variationId": "%s",
+                  "quantity": 1
+                }
+            """.formatted(customerId, variantId))
+                .post("/cart/add")
+                .then()
+                .statusCode(201);
+
+        given().when().delete("cart/" + customerId + "/" + variantId)
+                .then().statusCode(200)
+                .body("items.size()", is(0));
+
+        given().when().delete("cart/" + customerId + "/" + variantId)
+                .then().statusCode(400);
+    }
+
+    @Test
+    void shouldFailWithInvalidCustomerId() {
+        CustomerAndVariant data = createCustomerAndVariant();
+        String customerId = data.customerId();
+        String variantId = data.variantId();
+
+        given()
+                .contentType(ContentType.JSON)
+                .body("""
+                {
+                  "customerId": "%s",
+                  "variationId": "%s",
+                  "quantity": 1
+                }
+            """.formatted(customerId, variantId))
+                .post("/cart/add")
+                .then()
+                .statusCode(201);
+
+        given().when().delete("cart/testInvalidCustomer/" + variantId)
+                .then().statusCode(404);
+    }
+
+
+    @Test
+    void shouldFailWithInvalidVariantId() {
+        CustomerAndVariant data = createCustomerAndVariant();
+        String customerId = data.customerId();
+        String variantId = data.variantId();
+
+        given()
+                .contentType(ContentType.JSON)
+                .body("""
+                {
+                  "customerId": "%s",
+                  "variationId": "%s",
+                  "quantity": 1
+                }
+            """.formatted(customerId, variantId))
+                .post("/cart/add")
+                .then()
+                .statusCode(201);
+
+        given().when().delete("cart/"+ customerId + "/testInvalidVariantId")
+                .then().statusCode(404);
+    }
+
+
 }

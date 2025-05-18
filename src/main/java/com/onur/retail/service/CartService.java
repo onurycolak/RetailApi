@@ -1,7 +1,6 @@
 package com.onur.retail.service;
 
 import com.onur.retail.api.request.CartItemRequest;
-import com.onur.retail.api.response.CartItemResponse;
 import com.onur.retail.api.response.CartResponse;
 import com.onur.retail.api.response.ErrorResponse;
 import com.onur.retail.domain.Cart;
@@ -18,7 +17,6 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
-import java.util.Objects;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -103,5 +101,60 @@ public class CartService {
         cart.clearCart();
 
         entityManager.flush();
+    }
+
+    @Transactional
+    public Cart removeItemFromCart(UUID customerId, UUID itemId, Integer quantity) {
+        Cart cart = getCartByUserId(customerId);
+
+        if (cart == null) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.BAD_REQUEST)
+                            .entity(new ErrorResponse("No cart associated with the user"))
+                            .type("application/json")
+                            .build()
+            );
+        }
+
+        CartItem cartItem = cartRepository.findByVariantId(itemId, cart.getId());
+
+        if (cartItem == null) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.BAD_REQUEST)
+                            .entity(new ErrorResponse("Variant could not be found in the cart"))
+                            .type("application/json")
+                            .build()
+            );
+        }
+
+        Integer cartItemQuantity =  cartItem.getQuantity();
+
+        if (quantity == null) {
+            quantity = 1;
+        }
+
+        if (quantity <= 0) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.BAD_REQUEST)
+                            .entity(new ErrorResponse("Quantity cannot be negative integer"))
+                            .type("application/json")
+                            .build()
+            );
+        }
+
+        if (quantity > cartItemQuantity) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.BAD_REQUEST)
+                            .entity(new ErrorResponse("Quantity to remove cannot exceed item quantity in cart"))
+                            .type("application/json")
+                            .build()
+            );
+        }
+
+        cartItem.setQuantity(cartItemQuantity - quantity);
+
+        entityManager.flush();
+
+        return cart;
     }
 }

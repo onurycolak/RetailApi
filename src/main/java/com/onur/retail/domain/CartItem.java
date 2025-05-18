@@ -85,8 +85,13 @@ public class CartItem {
     }
 
     public void setQuantity(Integer quantity) {
-        if (quantity == null || quantity <= 0) {
+        if (quantity == null || quantity < 0) {
             throw new IllegalArgumentException("Quantity must not be null positive integer");
+        }
+        
+        if (quantity == 0) {
+            cart.removeItemFromCart(this);
+            return;
         }
 
         this.quantity = quantity;

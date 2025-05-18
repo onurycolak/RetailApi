@@ -20,7 +20,7 @@ public class ProductGroup {
     private Instant createDate;
     private Instant updateDate;
 
-    public ProductGroup() {};
+    public ProductGroup() {}
 
     public ProductGroup(
             String name,
@@ -35,8 +35,8 @@ public class ProductGroup {
         this.name = name;
         this.description = description;
 
-        setVariants(variants);
-    };
+        addVariants(variants);
+    }
 
     public UUID getId() {
         return id;
@@ -78,25 +78,26 @@ public class ProductGroup {
         this.description = description;
     }
 
-    public void setVariants(List<ProductVariant> variants) {
+    public void addVariants(List<ProductVariant> variants) {
         if (variants == null || variants.isEmpty()) {
             throw new IllegalArgumentException("Provided variants must be non-null, non-empty");
         }
 
         this.variants.addAll(variants);
 
-        // Ensure only one is default
-        boolean hasDefault = false;
+        ProductVariant lastDefault = null;
 
         for (ProductVariant variant : variants) {
             variant.setUpdateDate();
             variant.setProductGroup(this);
 
-            if (!hasDefault && Boolean.TRUE.equals(variant.getIsDefault())) {
-                hasDefault = true;
-            } else if (hasDefault && Boolean.TRUE.equals(variant.getIsDefault())) {
-                variant.setDefault(false);
+            if (Boolean.TRUE.equals(variant.getIsDefault())) {
+                lastDefault = variant;
             }
+        }
+
+        if (lastDefault != null) {
+            setDefaultProduct(lastDefault);
         }
 
         this.updateDate = Instant.now();
@@ -114,8 +115,9 @@ public class ProductGroup {
             throw new IllegalArgumentException("Variant does not belong to this group.");
         }
 
-        variants.forEach((groupVariant) ->
-                groupVariant.setDefault(groupVariant.getId().equals(variant.getId())));
+        variants.forEach((groupVariant) -> groupVariant.setDefault(false));
+
+        variant.setDefault(true);
     }
 
     public ProductVariant getDefaultProduct() {
@@ -123,5 +125,11 @@ public class ProductGroup {
                 .filter(ProductVariant::getIsDefault)
                 .findFirst()
                 .orElse(null);
+    }
+
+    public ProductGroup removeVariant(UUID variantId) {
+        variants.removeIf(variant -> variant.getId().equals(variantId));
+
+        return this;
     }
 }
